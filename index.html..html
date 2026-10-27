@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#080b12">
+<title>Tradeify CFD Risk Calculator</title>
+<style>
+:root{color-scheme:dark;--bg:#080b12;--panel:#111827;--panel2:#182235;--line:#2b3548;--text:#f4f7fb;--muted:#9ba8bc;--accent:#6ee7b7;--blue:#93c5fd;--warn:#fbbf24;--red:#fca5a5}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#17233a 0,#080b12 48%);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);min-height:100vh;padding:env(safe-area-inset-top) 14px calc(28px + env(safe-area-inset-bottom))}
+main{max-width:620px;margin:0 auto}.top{padding:22px 4px 16px}.eyebrow{font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);font-weight:800}.top h1{font-size:27px;line-height:1.12;margin:8px 0}.top p{margin:0;color:var(--muted);font-size:14px;line-height:1.45}
+.card{background:linear-gradient(160deg,rgba(24,34,53,.97),rgba(15,22,35,.98));border:1px solid var(--line);border-radius:20px;padding:17px;margin:12px 0;box-shadow:0 12px 35px #0003}
+h2{font-size:16px;margin:0 0 13px}.field{display:flex;flex-direction:column;gap:7px;min-width:0}.field label{font-size:12px;font-weight:700;color:var(--muted)}input,select{width:100%;min-width:0;background:#090e18;border:1px solid #354259;border-radius:11px;padding:13px 12px;color:var(--text);font-size:16px;outline:none}input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 2px #6ee7b722}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}.symbols{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.symbol{padding:11px 4px;border-radius:12px;border:1px solid var(--line);background:#0a101c;color:var(--muted);font-weight:800;font-size:13px}.symbol.active{border-color:var(--accent);background:#10332b;color:#d1fae5}.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}.seg button{padding:12px;border-radius:11px;border:1px solid var(--line);background:#0a101c;color:var(--muted);font-weight:800}.seg button.active.buy{background:#10332b;color:#d1fae5;border-color:#34d399}.seg button.active.sell{background:#3b1b24;color:#fecdd3;border-color:#fb7185}
+.result{background:linear-gradient(135deg,#0e3029,#10261f);border:1px solid #24634e;border-radius:17px;padding:16px;margin-top:14px}.result .small{font-size:12px;color:#a7c9bb}.big{font-size:34px;font-weight:850;letter-spacing:-.03em;margin:4px 0 12px;color:#a7f3d0}.metrics{display:grid;grid-template-columns:1fr 1fr;gap:12px}.metric{background:#081a16a8;border-radius:10px;padding:10px}.metric span{display:block;font-size:11px;color:#a7c9bb;margin-bottom:5px}.metric strong{font-size:17px;overflow-wrap:anywhere}.distance{display:flex;justify-content:space-between;align-items:center;background:#0b1220;padding:12px;border-radius:12px;color:var(--muted);font-size:13px}.distance strong{color:var(--text);font-size:16px}.note{font-size:12px;line-height:1.5;color:var(--muted);margin:10px 0 0}.warning{color:var(--warn);font-size:13px;line-height:1.45;margin-top:10px}.danger{color:var(--red)}.table{width:100%;border-collapse:collapse;font-size:13px}.table th,.table td{text-align:right;padding:11px 5px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}.table th:first-child,.table td:first-child{text-align:left}.table th{color:var(--muted);font-size:11px}.primary{width:100%;padding:14px;border-radius:12px;border:0;background:var(--accent);color:#052e24;font-weight:850;font-size:15px;margin-top:13px}.specgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.spec{padding:10px;border-radius:10px;background:#0b1220}.spec span{display:block;color:var(--muted);font-size:11px}.spec strong{display:block;font-size:14px;margin-top:4px}.footer{text-align:center;color:#718096;font-size:11px;padding:14px 8px 25px}.check{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px}.check input{width:17px;height:17px}
+@media(max-width:380px){.card{padding:13px}.top h1{font-size:24px}.grid{gap:9px}.big{font-size:30px}}
+</style>
+</head>
+<body>
+<main>
+<header class="top">
+<div class="eyebrow">Tradeify FX · MT5</div>
+<h1>CFD Position Size</h1>
+<p>Enter your actual entry and stop-loss prices. Calculate lot size from your risk budget.</p>
+</header>
+
+<section class="card">
+<h2>Instrument</h2>
+<div class="symbols" role="group" aria-label="Instrument">
+<button class="symbol active" data-symbol="NAS100">NAS100</button>
+<button class="symbol" data-symbol="SPX500">SPX500</button>
+<button class="symbol" data-symbol="XAUUSD">XAUUSD · Gold</button>
+</div>
+<div class="grid">
+<div class="field"><label for="entry">ENTRY PRICE</label><input id="entry" type="number" inputmode="decimal" step="any" value="25000"></div>
+<div class="field"><label for="stop">STOP-LOSS PRICE</label><input id="stop" type="number" inputmode="decimal" step="any" value="24950"></div>
+</div>
+<div class="field"><label>TRADE DIRECTION</label><div class="seg"><button class="active buy" data-side="Buy">BUY / LONG</button><button data-side="Sell" class="sell" >SELL / SHORT</button></div></div>
+<div class="distance" style="margin-top:12px"><span>Entry-to-stop distance</span><strong id="distance">50.00</strong></div>
+</section>
+
+<section class="card">
+<h2>Risk settings</h2>
+<div class="grid">
+<div class="field"><label for="balance">ACCOUNT BALANCE · USD</label><input id="balance" type="number" inputmode="decimal" value="10000" min="0"></div>
+<div class="field"><label for="risk">RISK · %</label><input id="risk" type="number" inputmode="decimal" value="0.9" min="0" step="any"></div>
+</div>
+<div class="distance"><span>Risk budget</span><strong id="budget">$90.00</strong></div>
+</section>
+
+<section class="card">
+<h2>MT5 symbol specifications</h2>
+<p class="note" style="margin-top:-5px;margin-bottom:12px">Pre-filled from the screenshots you supplied. Tick-value interpretation should be verified in MT5 before live trading.</p>
+<div class="specgrid">
+<div class="spec"><span>Contract size</span><strong id="contract">10 contracts / lot</strong></div>
+<div class="spec"><span>Tick size</span><strong id="tickLabel">0.01</strong></div>
+<div class="spec"><span>Tick value</span><strong id="tickValueLabel">$0.01</strong></div>
+<div class="spec"><span>Minimum volume</span><strong>0.01 lots</strong></div>
+<div class="spec"><span>Volume step</span><strong>0.01 lots</strong></div>
+<div class="spec"><span>Maximum volume</span><strong>50.00 lots</strong></div>
+</div>
+<div class="grid">
+<div class="field"><label for="tickSize">TICK SIZE</label><input id="tickSize" type="number" value="0.01" step="any" min="0"></div>
+<div class="field"><label for="tickValue">TICK VALUE · USD / LOT</label><input id="tickValue" type="number" value="0.01" step="any" min="0"></div>
+<div class="field"><label for="step">VOLUME STEP</label><input id="step" type="number" value="0.01" step="any" min="0"></div>
+<div class="field"><label for="buffer">EXTRA PRICE BUFFER</label><input id="buffer" type="number" value="0" step="any" min="0"></div>
+</div>
+<label class="check"><input type="checkbox" id="showCalc"> Show point-value calculation details</label>
+<div id="calcDetails" class="note" hidden></div>
+</section>
+
+<section class="card">
+<h2>Position size result</h2>
+<div class="result">
+<div class="small">CALCULATED VOLUME</div>
+<div class="big" id="lots">— lots</div>
+<div class="metrics">
+<div class="metric"><span>ESTIMATED RISK AT STOP</span><strong id="actualRisk">$—</strong></div>
+<div class="metric"><span>RISK BUDGET REMAINING</span><strong id="remaining">$—</strong></div>
+<div class="metric"><span>USD PER 1.00 PRICE MOVE</span><strong id="pointValue">$—</strong></div>
+<div class="metric"><span>LOSS PER LOT AT STOP</span><strong id="lossPerLot">$—</strong></div>
+</div>
+<div id="warning" class="warning" aria-live="polite"></div>
+</div>
+</section>
+
+<section class="card">
+<h2>Take-profit allocation</h2>
+<div class="field"><label for="split">CLOSING PLAN</label><select id="split"><option value="50,30,20">50% TP1 · 30% TP2 · 20% runner</option><option value="70,30,0">70% TP1 · 30% runner</option></select></div>
+<table class="table" style="margin-top:10px"><thead><tr><th>Target</th><th>Lots to close</th><th>Stop-risk equivalent</th></tr></thead><tbody id="tpRows"></tbody></table>
+<p class="note">Each allocation rounds down independently to the volume step; any remainder stays open. Risk equivalent is not profit.</p>
+<button class="primary" id="copy">Copy trade summary</button>
+<div id="copyStatus" class="note" aria-live="polite"></div>
+</section>
+
+<section class="card">
+<h2>Before live trading</h2>
+<p class="note">Screenshots show tick size 0.01 and tick value $0.01 for NAS100, SPX500 and XAUUSD. If tick value is quoted per lot, the derived value is $1 per 1.00 price move per lot. Confirm this using MT5's profit calculation or a demo trade. Actual loss can be higher due to spread, slippage, gaps and execution costs.</p>
+</section>
+<footer class="footer">Calculator runs locally in your browser. It does not connect to MT5 or place trades.</footer>
+</main>
+<script>
+const specs={
+ NAS100:{contract:"10 contracts / lot",tickSize:0.01,tickValue:0.01,entry:25000,stop:24950},
+ SPX500:{contract:"10 contracts / lot",tickSize:0.01,tickValue:0.01,entry:5800,stop:5780},
+ XAUUSD:{contract:"100 contracts / lot",tickSize:0.01,tickValue:0.01,entry:4000,stop:3990}
+};
+let symbol="NAS100",side="Buy";
+const $=id=>document.getElementById(id);
+function num(id){return Number($(id).value)||0}
+function money(n){return n.toLocaleString("en-US",{style:"currency",currency:"USD",minimumFractionDigits:2,maximumFractionDigits:2})}
+function fmt(n,d=2){return n.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d})}
+function roundDownLots(n,step){return step>0?Number((Math.floor((n+1e-9)/step)*step).toFixed(6)):0}
+function update(){
+ const entry=num("entry"),stop=num("stop"),balance=num("balance"),risk=num("risk"),tickSize=num("tickSize"),tickValue=num("tickValue"),step=num("step"),buffer=Math.max(0,num("buffer"));
+ const dist=Math.abs(entry-stop),budget=Math.max(0,balance)*Math.max(0,risk)/100;
+ const perPoint=tickSize>0&&tickValue>0?tickValue/tickSize:0;
+ const eff=dist+buffer,raw=perPoint*eff>0?budget/(perPoint*eff):0;
+ const lots=roundDownLots(raw,step),actual=lots*eff*perPoint,minimum=0.01;
+ const validSide=(side==="Buy"&&stop<entry)||(side==="Sell"&&stop>entry);
+ $("distance").textContent=fmt(dist,Math.min(5,Math.max(2,(String(entry).split(".")[1]||"").length,(String(stop).split(".")[1]||"").length)));
+ $("budget").textContent=money(budget);$("pointValue").textContent=money(perPoint*lots);$("lossPerLot").textContent=money(eff*perPoint);
+ $("tickLabel").textContent=fmt(tickSize,2);$("tickValueLabel").textContent=money(tickValue);$("contract").textContent=specs[symbol].contract;
+ const warn=[];
+ if(!validSide)warn.push("Check direction: Buy stop should be below entry; Sell stop should be above entry.");
+ if(!(entry>0&&stop>0&&dist>0&&balance>0&&perPoint>0&&step>0))warn.push("Enter positive prices, balance, tick size, tick value and volume step.");
+ if(lots<minimum)warn.push("Risk budget is too small for the minimum 0.01 lot; do not force a trade.");
+ if(lots>50)warn.push("Calculated size exceeds the broker's 50-lot maximum.");
+ if(actual>budget+0.001)warn.push("Estimated risk exceeds your risk budget.");
+ const ok=validSide&&entry>0&&stop>0&&dist>0&&balance>0&&perPoint>0&&step>0&&lots>=minimum&&lots<=50&&actual<=budget+0.001;
+ $("lots").textContent=ok?fmt(lots,2)+" lots":"Check inputs";
+ $("actualRisk").textContent=ok?money(actual):"—";$("remaining").textContent=ok?money(Math.max(0,budget-actual)):"—";
+ $("warning").textContent=warn.join(" ");
+ $("calcDetails").textContent=`USD per 1.00 price move per lot = tick value ÷ tick size = ${tickValue} ÷ ${tickSize} = ${fmt(perPoint,4)}. Raw lots = risk budget ÷ (price distance + buffer) ÷ USD per price point = ${fmt(raw,4)}; rounded down to ${step} lot steps.`;
+ const shares=$("split").value.split(",").map(Number),names=["TP1","TP2","Runner"];
+ $("tpRows").innerHTML=shares.map((share,i)=>{const amount=roundDownLots(lots*share/100,step);return `<tr><td>${names[i]}</td><td>${fmt(amount,2)}</td><td>${money(amount*eff*perPoint)}</td></tr>`}).join("");
+}
+document.querySelectorAll("[data-symbol]").forEach(b=>b.addEventListener("click",()=>{
+ symbol=b.dataset.symbol;document.querySelectorAll("[data-symbol]").forEach(x=>x.classList.toggle("active",x===b));
+ $("entry").value=specs[symbol].entry;$("stop").value=specs[symbol].stop;
+ $("tickSize").value=specs[symbol].tickSize;$("tickValue").value=specs[symbol].tickValue;update();
+}));
+document.querySelectorAll("[data-side]").forEach(b=>b.addEventListener("click",()=>{
+ side=b.dataset.side;document.querySelectorAll("[data-side]").forEach(x=>{x.classList.toggle("active",x===b);x.classList.toggle("buy",x.dataset.side==="Buy"&&x===b);x.classList.toggle("sell",x.dataset.side==="Sell"&&x===b)});update();
+}));
+["entry","stop","balance","risk","tickSize","tickValue","step","buffer","split"].forEach(id=>$(id).addEventListener("input",update));
+$("showCalc").addEventListener("change",()=>{$("calcDetails").hidden=!$("showCalc").checked});
+$("copy").addEventListener("click",async()=>{
+ const txt=`Tradeify FX ${symbol} CFD\nDirection: ${side}\nEntry: ${$("entry").value}\nStop loss: ${$("stop").value}\nDistance: ${$("distance").textContent}\nBalance: ${money(num("balance"))}\nRisk: ${num("risk")}% (${money(num("balance")*num("risk")/100)})\nPosition: ${$("lots").textContent}\nEstimated risk: ${$("actualRisk").textContent}\n${$("tpRows").innerText}`;
+ try{await navigator.clipboard.writeText(txt);$("copyStatus").textContent="Trade summary copied."}catch(e){$("copyStatus").textContent=txt}
+});
+update();
+</script>
+</body></html>
